@@ -58,9 +58,11 @@
     event.preventDefault()
     startLoading()
     var password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-    Cognito.signUp($inputs.email.value, password)
+    var email = $inputs.email.value
+    Cognito.signUp(email, password)
     .then(function(result) {
       localStorage.setItem('password', password)
+      localStorage.setItem('email', email)
       stopLoading()
       hideForm()
       addAlert({

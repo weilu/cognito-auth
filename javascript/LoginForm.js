@@ -73,6 +73,7 @@
       // confirmation form page.
       if (error.message === 'User is not confirmed.') {
         if (verificationCode) {
+          console.log('Auto verifying user using code in URL');
           Cognito.confirm(email, verificationCode)
           .then(function(result) {
             handleSubmit(event)
@@ -113,6 +114,11 @@
       $root.appendChild($container);
       if (message) {
         addAlert(message);
+      }
+      var email = $container.querySelector('input');
+      var storedEmail = localStorage.getItem('email')
+      if (storedEmail) {
+        email.value = storedEmail
       }
     })
     .catch(redirectToWelcomePage)
