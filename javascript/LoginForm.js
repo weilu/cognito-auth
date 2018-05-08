@@ -8,6 +8,8 @@
     $button,
     $form,
     $link;
+  var url = new URL(window.location);
+  var verificationCode = url.searchParams.get("code");
 
   function startLoading() {
     removeAlert()
@@ -51,8 +53,9 @@
   function handleSubmit(event) {
     event.preventDefault()
     var $inputs = $container.getElementsByTagName('input');
+    var email = $inputs.email.value
     startLoading()
-    Cognito.logIn($inputs.email.value, $inputs.password.value)
+    Cognito.logIn(email, localStorage.getItem('password'))
     .then(function(result) {
       stopLoading()
       addAlert({
@@ -60,7 +63,8 @@
         message: 'Log in successful! Redirecting...'
       })
       setTimeout(redirectToWelcomePage, 3000)
-      console.log(result)
+      // use identity token as Authorization header
+      console.log(result.idToken.jwtToken)
     })
     .catch(function(error) {
       stopLoading()
@@ -68,10 +72,25 @@
       // If the user needs to enter its confirmation code switch to the
       // confirmation form page.
       if (error.message === 'User is not confirmed.') {
-        EventEmitter.emit('ConfirmForm:mount', {
-          email: $inputs.email.value,
-        });
-        EventEmitter.emit('LoginForm:unmount');
+        if (verificationCode) {
+          Cognito.confirm(email, verificationCode)
+          .then(function(result) {
+            handleSubmit(event)
+          })
+          .catch(function(error) {
+            stopLoading();
+            addAlert({
+              type: 'error',
+              message: error.message,
+            });
+            console.log(error);
+          })
+        } else {
+          EventEmitter.emit('ConfirmForm:mount', {
+            email: $inputs.email.value,
+          });
+          EventEmitter.emit('LoginForm:unmount');
+        }
         return;
       }
       addAlert({

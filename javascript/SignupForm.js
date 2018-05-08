@@ -32,6 +32,16 @@
     $close && $close.removeEventListener('click', handleClose);
   }
 
+  function hideForm() {
+    var style = $form.getAttribute("style") || ''
+    $form.setAttribute("style", style + "display: none;")
+  }
+
+  function showForm() {
+    var style = $form.getAttribute("style") || ''
+    $form.setAttribute("style", style.replace('display: none;', ''))
+  }
+
   function handleClose(event) {
     event.target.parentNode.remove()
   }
@@ -46,17 +56,16 @@
     var $inputs = $container.getElementsByTagName('input'),
       attributes;
     event.preventDefault()
-    if ($inputs.password.value !== $inputs.repeatPassword.value) {
-      console.log('Passwords do not match!')
-      return;
-    }
     startLoading()
-    Cognito.signUp($inputs.email.value, $inputs.password.value)
+    var password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    Cognito.signUp($inputs.email.value, password)
     .then(function(result) {
+      localStorage.setItem('password', password)
       stopLoading()
+      hideForm()
       addAlert({
         type: 'success',
-        message: 'Usuario creado correctamente.',
+        message: 'Check your email to sign in',
       })
       console.log(result)
     })
