@@ -1,7 +1,7 @@
 (function(ready, EventEmitter) {
 
   ready(function() {
-    EventEmitter.emit('LoginForm:mount')
+    EventEmitter.emit('SignupForm:mount')
   })
 
 })(window.ready, window.EventEmitter)

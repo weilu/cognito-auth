@@ -123,9 +123,12 @@
   })
 
   EventEmitter.on('SignupForm:unmount', function() {
-    $link.removeEventListener('click', handleLoginLink)
-    $form.removeEventListener('submit', handleSubmit)
-    $container.remove()
+    if ($link)
+      $link.removeEventListener('click', handleLoginLink)
+    if ($form)
+      $form.removeEventListener('submit', handleSubmit)
+    if ($container)
+      $container.remove()
   })
 
 })(
