@@ -50,11 +50,53 @@
     EventEmitter.emit('Welcome:mount');
   }
 
-  function handleSubmit(event) {
-    event.preventDefault()
-    var $inputs = $container.getElementsByTagName('input');
-    var email = $inputs.email.value
-    startLoading()
+  function loginNewUser(email) {
+    if (verificationCode) {
+      console.log('Auto verifying new user using code in URL');
+      Cognito.confirm(email, verificationCode)
+      .then(function(result) {
+        actuallyLogin(email)
+      })
+      .catch(function(error) {
+        stopLoading();
+        addAlert({
+          type: 'error',
+          message: error.message,
+        });
+        console.log(error);
+      })
+    } else {
+      EventEmitter.emit('ConfirmForm:mount', {
+        email: $inputs.email.value,
+      });
+      EventEmitter.emit('LoginForm:unmount');
+    }
+  }
+
+  function loginExistingUser(email) {
+    if (verificationCode) {
+      console.log('Auto verifying existing user using code in URL');
+      Cognito.confirmPassword(email, verificationCode, localStorage.getItem('password'))
+      .then(function(result) {
+        actuallyLogin(email)
+      })
+      .catch(function(error) {
+        stopLoading();
+        addAlert({
+          type: 'error',
+          message: error.message,
+        });
+        console.log(error);
+      })
+    } else {
+      addAlert({
+        type: 'error',
+        message: 'Verification code missing in URL',
+      })
+    }
+  }
+
+  function actuallyLogin(email) {
     Cognito.logIn(email, localStorage.getItem('password'))
     .then(function(result) {
       stopLoading()
@@ -72,26 +114,10 @@
       // If the user needs to enter its confirmation code switch to the
       // confirmation form page.
       if (error.message === 'User is not confirmed.') {
-        if (verificationCode) {
-          console.log('Auto verifying user using code in URL');
-          Cognito.confirm(email, verificationCode)
-          .then(function(result) {
-            handleSubmit(event)
-          })
-          .catch(function(error) {
-            stopLoading();
-            addAlert({
-              type: 'error',
-              message: error.message,
-            });
-            console.log(error);
-          })
-        } else {
-          EventEmitter.emit('ConfirmForm:mount', {
-            email: $inputs.email.value,
-          });
-          EventEmitter.emit('LoginForm:unmount');
-        }
+        EventEmitter.emit('ConfirmForm:mount', {
+          email: $inputs.email.value,
+        });
+        EventEmitter.emit('LoginForm:unmount');
         return;
       }
       addAlert({
@@ -100,6 +126,16 @@
       })
       console.error(error)
     })
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    var $inputs = $container.getElementsByTagName('input');
+    var email = $inputs.email.value
+    startLoading()
+    var existingUser = localStorage.getItem('existingUser')
+    loginFn = existingUser ? loginExistingUser : loginNewUser
+    loginFn(email)
   }
 
   EventEmitter.on('LoginForm:mount', function(message) {

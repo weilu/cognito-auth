@@ -63,6 +63,7 @@
     .then(function(result) {
       localStorage.setItem('password', password)
       localStorage.setItem('email', email)
+      localStorage.removeItem('existingUser')
       stopLoading()
       hideForm()
       addAlert({
@@ -73,6 +74,29 @@
     })
     .catch(function(error) {
       stopLoading()
+      if (error.message === 'User already exists') {
+        Cognito.forgotPassword(email)
+        .then(function(result) {
+          localStorage.setItem('password', password)
+          localStorage.setItem('email', email)
+          localStorage.setItem('existingUser', true)
+          stopLoading()
+          hideForm()
+          addAlert({
+            type: 'success',
+            message: 'Check your email to sign in',
+          })
+        })
+        .catch(function(error) {
+          stopLoading()
+          addAlert({
+            type: 'error',
+            message: error.message,
+          })
+          console.error(error)
+        })
+        return;
+      }
       addAlert({
         type: 'error',
         message: error.message,

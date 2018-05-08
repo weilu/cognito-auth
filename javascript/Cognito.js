@@ -145,6 +145,32 @@
     return Promise.resolve(User.signOut());
   }
 
+  function forgotPassword(username) {
+    var user = new CognitoUser({
+      Username: username,
+      Pool: UserPool,
+    });
+    return new Promise(function(resolve, reject) {
+      user.forgotPassword({
+        onSuccess: resolve,
+        onFailure: reject,
+      })
+    })
+  }
+
+  function confirmPassword(username, verificationCode, password) {
+    var user = new CognitoUser({
+      Username: username,
+      Pool: UserPool,
+    });
+    return new Promise(function(resolve, reject) {
+      user.confirmPassword(verificationCode, password, {
+        onSuccess: resolve,
+        onFailure: reject,
+      })
+    })
+  }
+
   window.Cognito = Object.freeze({
     signUp: signUp,
     confirm: confirm,
@@ -155,5 +181,7 @@
     signOut: signOut,
     isAuthenticated: isAuthenticated,
     isNotAuthenticated: isNotAuthenticated,
+    forgotPassword: forgotPassword,
+    confirmPassword: confirmPassword,
   })
 })(window)
