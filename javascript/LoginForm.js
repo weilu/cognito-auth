@@ -99,14 +99,16 @@
   function actuallyLogin(email) {
     Cognito.logIn(email, localStorage.getItem('password'))
     .then(function(result) {
+      // use identity token as Authorization header later
+      localStorage.setItem('auth_token', result.idToken.jwtToken)
+
       stopLoading()
       addAlert({
         type: 'success',
         message: 'Log in successful! Redirecting...'
       })
       setTimeout(redirectToWelcomePage, 3000)
-      // use identity token as Authorization header
-      console.log(result.idToken.jwtToken)
+      console.log(result)
     })
     .catch(function(error) {
       stopLoading()

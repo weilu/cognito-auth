@@ -74,6 +74,15 @@
     $container.innerHTML = $loading.outerHTML;
   }
 
+  function testMoneyCatAuth(callback, errCallback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://q5i6ef1jfi.execute-api.ap-southeast-1.amazonaws.com/api/testauth');
+    xhr.setRequestHeader('Authorization', localStorage.getItem('auth_token'))
+    xhr.onload = callback
+    xhr.onerror = errCallback
+    xhr.send();
+  }
+
 
   EventEmitter.on('Welcome:mount', function() {
     Cognito.isAuthenticated()
@@ -82,9 +91,19 @@
       loading();
       Cognito.getUser()
       .then(function(user) {
-        setTimeout(function(){render(user)}, 1000);
-        console.log(user);
-      })
+        setTimeout(function(){
+          render(user)
+          var moneycat = $container.getElementsByTagName('pre')[0];
+          testMoneyCatAuth(function() {
+            console.log(this.status, this.responseText)
+            moneycat.innerHTML = 'response status: ' + this.status +
+              '\n response output: ' + this.responseText
+          }, function() {
+            moneycat.innerHTML = 'Request error, check console output'
+          })
+            }, 1000);
+            console.log(user);
+          })
     })
     .catch(function(error) {
       redirectToLoginPage({
