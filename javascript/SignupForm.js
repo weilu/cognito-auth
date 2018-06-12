@@ -57,13 +57,9 @@
       attributes;
     event.preventDefault()
     startLoading()
-    var password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     var email = $inputs.email.value
-    Cognito.signUp(email, password)
+    Cognito.signUp(email)
     .then(function(result) {
-      localStorage.setItem('password', password)
-      localStorage.setItem('email', email)
-      localStorage.removeItem('existingUser')
       stopLoading()
       hideForm()
       addAlert({
@@ -77,14 +73,11 @@
       if (error.message === 'User already exists') {
         Cognito.forgotPassword(email)
         .then(function(result) {
-          localStorage.setItem('password', password)
-          localStorage.setItem('email', email)
-          localStorage.setItem('existingUser', true)
           stopLoading()
           hideForm()
           addAlert({
             type: 'success',
-            message: 'Check your email to sign in',
+            message: 'Welcome back! Check your email to sign in',
           })
         })
         .catch(function(error) {

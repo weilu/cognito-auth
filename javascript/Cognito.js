@@ -11,10 +11,14 @@
     }),
     User;
 
-  function signUp(email, password) {
+  function signUp(email) {
+    var password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     var attributes = [new CognitoUserAttribute({
       Name: 'email',
       Value: email,
+    }), new CognitoUserAttribute({
+      Name: 'custom:token',
+      Value: password,
     })]
     return new Promise(function(resolve, reject) {
       UserPool.signUp(

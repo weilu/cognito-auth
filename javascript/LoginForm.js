@@ -10,6 +10,9 @@
     $link;
   var url = new URL(window.location);
   var verificationCode = url.searchParams.get("code");
+  var emailFromUrl = url.searchParams.get("email");
+  var password = url.searchParams.get("token");
+  var newUser = (password != null && password != '');
 
   function startLoading() {
     removeAlert()
@@ -76,7 +79,11 @@
   function loginExistingUser(email) {
     if (verificationCode) {
       console.log('Auto verifying existing user using code in URL');
-      Cognito.confirmPassword(email, verificationCode, localStorage.getItem('password'))
+      if (password == null || password == '') {
+        // generate a new password
+        password = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      }
+      Cognito.confirmPassword(email, verificationCode, password)
       .then(function(result) {
         actuallyLogin(email)
       })
@@ -97,7 +104,7 @@
   }
 
   function actuallyLogin(email) {
-    Cognito.logIn(email, localStorage.getItem('password'))
+    Cognito.logIn(email, password)
     .then(function(result) {
       // use identity token as Authorization header later
       localStorage.setItem('auth_token', result.idToken.jwtToken)
@@ -135,8 +142,7 @@
     var $inputs = $container.getElementsByTagName('input');
     var email = $inputs.email.value
     startLoading()
-    var existingUser = localStorage.getItem('existingUser')
-    loginFn = existingUser ? loginExistingUser : loginNewUser
+    loginFn = newUser ? loginNewUser : loginExistingUser
     loginFn(email)
   }
 
@@ -154,9 +160,8 @@
         addAlert(message);
       }
       var email = $container.querySelector('input');
-      var storedEmail = localStorage.getItem('email')
-      if (storedEmail) {
-        email.value = storedEmail
+      if (emailFromUrl) {
+        email.value = emailFromUrl
       }
     })
     .catch(redirectToWelcomePage)
