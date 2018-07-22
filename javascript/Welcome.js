@@ -76,7 +76,7 @@
 
   function testMoneyCatAuth(callback, errCallback) {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://4cdmah3o59.execute-api.ap-southeast-1.amazonaws.com/api/testauth');
+    xhr.open('GET', 'https://q5i6ef1jfi.execute-api.ap-southeast-1.amazonaws.com/api/testauth');
     xhr.setRequestHeader('Authorization', localStorage.getItem('auth_token'))
     xhr.onload = callback
     xhr.onerror = errCallback
